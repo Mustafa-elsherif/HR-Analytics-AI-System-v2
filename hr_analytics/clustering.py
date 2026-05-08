@@ -8,6 +8,7 @@
 from pyspark.ml.feature import VectorAssembler, StandardScaler
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
+from pyspark.sql import functions as F
 import matplotlib.pyplot as plt
 import os
 
@@ -143,12 +144,7 @@ def analyze_clusters(df_clustered):
 
     Args:
         df_clustered: Clustered Spark DataFrame
-
-    Returns:
-        None
     """
-    from pyspark.sql import functions as F
-
     print("=" * 60)
     print("CLUSTER ANALYSIS SUMMARY")
     print("=" * 60)
@@ -164,6 +160,60 @@ def analyze_clusters(df_clustered):
     ).orderBy("cluster")
 
     cluster_analysis.show(truncate=False)
+
+
+def plot_cluster_visualization(df_clustered):
+    """
+    Plot cluster visualization scatter plots.
+
+    Args:
+        df_clustered: Clustered Spark DataFrame
+    """
+    cluster_pdf = df_clustered.select(
+        "cluster", "Age", "MonthlyIncome",
+        "TotalWorkingYears", "RiskScore"
+    ).toPandas()
+
+    colors = {0: "steelblue", 1: "tomato", 2: "seagreen"}
+    labels = {0: "Mid-Career Stable", 1: "Young High-Risk", 2: "Senior High-Income"}
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+
+    for cluster in [0, 1, 2]:
+        subset = cluster_pdf[cluster_pdf["cluster"] == cluster]
+        axes[0].scatter(subset["Age"], subset["MonthlyIncome"],
+                        c=colors[cluster], label=labels[cluster], alpha=0.6)
+    axes[0].set_title("Age vs Monthly Income", fontweight="bold")
+    axes[0].set_xlabel("Age")
+    axes[0].set_ylabel("Monthly Income ($)")
+    axes[0].legend()
+
+    for cluster in [0, 1, 2]:
+        subset = cluster_pdf[cluster_pdf["cluster"] == cluster]
+        axes[1].scatter(subset["TotalWorkingYears"], subset["MonthlyIncome"],
+                        c=colors[cluster], label=labels[cluster], alpha=0.6)
+    axes[1].set_title("Experience vs Monthly Income", fontweight="bold")
+    axes[1].set_xlabel("Total Working Years")
+    axes[1].set_ylabel("Monthly Income ($)")
+    axes[1].legend()
+
+    cluster_counts = cluster_pdf["cluster"].value_counts().sort_index()
+    axes[2].bar([labels[i] for i in cluster_counts.index],
+                cluster_counts.values,
+                color=[colors[i] for i in cluster_counts.index],
+                edgecolor="black")
+    axes[2].set_title("Cluster Distribution", fontweight="bold")
+    axes[2].set_xlabel("Cluster")
+    axes[2].set_ylabel("Number of Employees")
+    axes[2].tick_params(axis='x', rotation=15)
+    for i, v in enumerate(cluster_counts.values):
+        axes[2].text(i, v + 5, str(v), ha="center", fontweight="bold")
+
+    plt.suptitle("Employee Segmentation - Cluster Visualization",
+                 fontsize=16, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUTS_PATH, "cluster_visualization.png"), dpi=150)
+    plt.show()
 
 
 def run_clustering(df):
@@ -194,6 +244,7 @@ def run_clustering(df):
     df_clustered.groupBy("cluster").count().orderBy("cluster").show()
 
     analyze_clusters(df_clustered)
+    plot_cluster_visualization(df_clustered)
 
     print("=" * 60)
     print("CLUSTERING COMPLETED SUCCESSFULLY")

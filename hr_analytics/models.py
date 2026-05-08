@@ -13,6 +13,9 @@ from pyspark.ml.evaluation import (
     MulticlassClassificationEvaluator,
     RegressionEvaluator
 )
+import matplotlib.pyplot as plt
+import pandas as pd
+import os
 
 
 FEATURE_COLS = [
@@ -139,6 +142,36 @@ def evaluate_attrition_model(predictions):
     return metrics
 
 
+def plot_feature_importance(model, feature_cols):
+    """
+    Plot feature importance from the trained Random Forest model.
+
+    Args:
+        model: Trained RandomForestClassificationModel
+        feature_cols: List of feature column names
+    """
+    feature_importance = pd.DataFrame({
+        "Feature": feature_cols,
+        "Importance": model.featureImportances.toArray()
+    }).sort_values("Importance", ascending=False).head(15)
+
+    plt.figure(figsize=(12, 8))
+    plt.barh(feature_importance["Feature"][::-1],
+             feature_importance["Importance"][::-1],
+             color="steelblue", edgecolor="black")
+    plt.title("Top 15 Most Important Features for Attrition Prediction",
+              fontsize=14, fontweight="bold")
+    plt.xlabel("Feature Importance Score")
+    plt.ylabel("Feature")
+    plt.tight_layout()
+    plt.savefig(os.path.join("outputs", "feature_importance.png"), dpi=150)
+    plt.show()
+
+    print("Top 15 Most Important Features:")
+    print("-" * 40)
+    print(feature_importance.to_string(index=False))
+
+
 def train_performance_model(df):
     """
     Train Random Forest Regressor for performance prediction.
@@ -245,6 +278,7 @@ def train_models(df):
     print("\nTraining Attrition Prediction Model...")
     attrition_model, attrition_predictions, _ = train_attrition_model(df_model)
     classification_metrics = evaluate_attrition_model(attrition_predictions)
+    plot_feature_importance(attrition_model, FEATURE_COLS)
 
     print("\nTraining Performance Prediction Model...")
     performance_model, performance_predictions = train_performance_model(df)

@@ -178,6 +178,47 @@ def plot_overtime_vs_attrition(df_original):
     print(overtime_pivot[["No", "Yes", "Total", "Attrition Rate %"]].to_string())
 
 
+def plot_correlation_heatmap(df_preprocessed):
+    """
+    Plot correlation heatmap for all numerical features.
+
+    Args:
+        df_preprocessed: Preprocessed Spark DataFrame
+    """
+    numeric_cols = [
+        "Age", "DailyRate", "DistanceFromHome", "Education",
+        "EnvironmentSatisfaction", "HourlyRate", "JobInvolvement",
+        "JobLevel", "JobSatisfaction", "MonthlyIncome", "MonthlyRate",
+        "NumCompaniesWorked", "PercentSalaryHike", "PerformanceRating",
+        "RelationshipSatisfaction", "StockOptionLevel", "TotalWorkingYears",
+        "TrainingTimesLastYear", "WorkLifeBalance", "YearsAtCompany",
+        "YearsInCurrentRole", "YearsSinceLastPromotion", "YearsWithCurrManager",
+        "Attrition_encoded"
+    ]
+
+    corr_pdf = df_preprocessed.select(numeric_cols).toPandas()
+    corr_matrix = corr_pdf.corr()
+
+    plt.figure(figsize=(16, 12))
+    sns.heatmap(corr_matrix,
+                annot=True,
+                fmt=".2f",
+                cmap="coolwarm",
+                center=0,
+                linewidths=0.5,
+                annot_kws={"size": 7})
+    plt.title("Correlation Heatmap - All Features", fontsize=16, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUTS_PATH, "correlation_heatmap.png"), dpi=150)
+    plt.show()
+
+    print("Top Correlations with Attrition:")
+    print("-" * 40)
+    attrition_corr = corr_matrix["Attrition_encoded"].drop("Attrition_encoded") \
+        .sort_values(ascending=False)
+    print(attrition_corr.to_string())
+
+
 def run_eda(df_preprocessed, df_original):
     """
     Run the full EDA pipeline.
@@ -193,6 +234,7 @@ def run_eda(df_preprocessed, df_original):
     plot_attrition_by_department(df_original)
     plot_salary_vs_performance(df_original)
     plot_overtime_vs_attrition(df_original)
+    plot_correlation_heatmap(df_preprocessed)
     print("=" * 60)
     print("EDA COMPLETED SUCCESSFULLY")
     print("=" * 60)

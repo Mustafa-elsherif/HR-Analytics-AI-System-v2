@@ -7,7 +7,7 @@
 # - Mahmoud Hesham      240101375  Model Development, Clustering, Dashboard
 # - Mariam Magdy        240102374  Exploratory Data Analysis
 # - Omar Ahmed Wafik    240101244  Preprocessing, Feature Engineering
-# - yousef hany        240100780  Data Ingestion, Insights
+# - yousef hany         240102846  Data Ingestion, Insights
 # =============================================================
 
 import os
