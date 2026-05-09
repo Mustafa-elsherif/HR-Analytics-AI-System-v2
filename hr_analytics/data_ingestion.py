@@ -10,10 +10,14 @@ from pyspark.sql import functions as F
 
 def create_spark_session():
     """Initialize and return a Spark Session."""
-    spark = SparkSession.builder \
-        .appName("HR Analytics AI System") \
-        .config("spark.sql.legacy.timeParserPolicy", "LEGACY") \
-        .getOrCreate()
+    from pyspark.sql import SparkSession
+    try:
+        spark = SparkSession.builder \
+            .appName("HR Analytics AI System") \
+            .config("spark.sql.legacy.timeParserPolicy", "LEGACY") \
+            .getOrCreate()
+    except Exception:
+        spark = SparkSession.getActiveSession()
     try:
         spark.sparkContext.setLogLevel("ERROR")
     except Exception:
