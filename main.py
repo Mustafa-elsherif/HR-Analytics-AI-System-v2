@@ -90,9 +90,14 @@ def main():
     print("=" * 60)
     print("HR Analytics AI System Completed Successfully.")
     print("=" * 60)
-
-    spark.stop()
+    try:
+        spark.stop()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
     main()
+
+
+
