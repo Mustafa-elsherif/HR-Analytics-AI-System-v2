@@ -11,13 +11,12 @@ from pyspark.sql import functions as F
 def create_spark_session():
     """Initialize and return a Spark Session."""
     from pyspark.sql import SparkSession
-    try:
+    spark = SparkSession.getActiveSession()
+    if spark is None:
         spark = SparkSession.builder \
             .appName("HR Analytics AI System") \
             .config("spark.sql.legacy.timeParserPolicy", "LEGACY") \
             .getOrCreate()
-    except Exception:
-        spark = SparkSession.getActiveSession()
     try:
         spark.sparkContext.setLogLevel("ERROR")
     except Exception:
