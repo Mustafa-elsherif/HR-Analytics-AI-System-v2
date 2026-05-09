@@ -14,7 +14,10 @@ def create_spark_session():
         .appName("HR Analytics AI System") \
         .config("spark.sql.legacy.timeParserPolicy", "LEGACY") \
         .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    try:
+        spark.sparkContext.setLogLevel("ERROR")
+    except Exception:
+        pass
     return spark
 
 
