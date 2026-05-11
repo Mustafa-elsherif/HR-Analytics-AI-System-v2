@@ -219,6 +219,46 @@ def plot_correlation_heatmap(df_preprocessed):
     print(attrition_corr.to_string())
 
 
+def plot_attrition_by_age(df_original):
+    """
+    Plot attrition by age.
+    """
+
+    age_attrition = df_original.groupBy("Age", "Attrition") \
+        .count().orderBy("Age").toPandas()
+
+    age_pivot = age_attrition.pivot(
+        index="Age",
+        columns="Attrition",
+        values="count"
+    ).fillna(0)
+
+    age_pivot[["No", "Yes"]].plot(
+        kind="bar",
+        stacked=True,
+        figsize=(14, 6),
+        color=["steelblue", "tomato"],
+        edgecolor="black"
+    )
+
+    plt.title("Attrition by Age", fontsize=16, fontweight="bold")
+    plt.xlabel("Age")
+    plt.ylabel("Number of Employees")
+    plt.legend(["Stayed", "Left"])
+
+    plt.tight_layout()
+
+    plt.savefig(
+        os.path.join(OUTPUTS_PATH, "attrition_by_age.png"),
+        dpi=150
+    )
+
+    plt.show()
+
+    print(age_pivot.to_string())
+
+
+
 def run_eda(df_preprocessed, df_original):
     """
     Run the full EDA pipeline.
@@ -231,6 +271,7 @@ def run_eda(df_preprocessed, df_original):
     print("EXPLORATORY DATA ANALYSIS")
     print("=" * 60)
     plot_attrition_distribution(df_original)
+    plot_attrition_by_age(df_original)
     plot_attrition_by_department(df_original)
     plot_salary_vs_performance(df_original)
     plot_overtime_vs_attrition(df_original)

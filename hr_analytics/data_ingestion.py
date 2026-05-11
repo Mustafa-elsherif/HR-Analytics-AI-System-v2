@@ -56,7 +56,7 @@ def explore_data(df):
     df.printSchema()
     print("-" * 60)
     print("First 5 Rows:")
-    df.show(5, truncate=True)
+    df.show(5, truncate=False, vertical=True)
     print("=" * 60)
     print("Data Ingestion Completed Successfully.")
     print("=" * 60)
